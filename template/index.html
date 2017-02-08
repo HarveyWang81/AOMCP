@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block 'title' %}
+    自动化运维管控平台
+{% endblock %}
+
+{% block 'page-title' %}
+    概览
+    <small>所有监控信息概览</small>
+{% endblock %}
+
+{% block 'path' %}
+
+{% endblock %}
+
+{% block 'container' %}
+    <!-- BEGIN DASHBOARD STATS -->
+    <div class="row-fluid">
+        <div class="span3 responsive" data-tablet="span6" data-desktop="span3">
+            <div class="dashboard-stat blue">
+                <div class="visual">
+                    <i class="icon-sitemap"></i>
+                </div>
+                <div class="details">
+                    <div class="number">
+                        {{ host_num }}
+                    </div>
+                    <div class="desc">
+                        主机
+                    </div>
+                </div>
+                <a class="more" href="#">
+                    View more <i class="m-icon-swapright m-icon-white"></i>
+                </a>
+            </div>
+        </div>
+        <div class="span3 responsive" data-tablet="span6" data-desktop="span3">
+            <div class="dashboard-stat green">
+                <div class="visual">
+                    <i class="icon-cogs"></i>
+                </div>
+                <div class="details">
+                    <div class="number">549</div>
+                    <div class="desc">服务</div>
+                </div>
+                <a class="more" href="#">
+                    View more <i class="m-icon-swapright m-icon-white"></i>
+                </a>
+            </div>
+        </div>
+        <div class="span3 responsive" data-tablet="span6  fix-offset" data-desktop="span3">
+            <div class="dashboard-stat purple">
+                <div class="visual">
+                    <i class="icon-tasks"></i>
+                </div>
+                <div class="details">
+                    <div class="number">+89%</div>
+                    <div class="desc">应用</div>
+                </div>
+                <a class="more" href="#">
+                    View more <i class="m-icon-swapright m-icon-white"></i>
+                </a>
+            </div>
+        </div>
+        <div class="span3 responsive" data-tablet="span6" data-desktop="span3">
+            <div class="dashboard-stat yellow">
+                <div class="visual">
+                    <i class="icon-warning-sign"></i>
+                </div>
+                <div class="details">
+                    <div class="number">12,5M$</div>
+                    <div class="desc">告警</div>
+                </div>
+                <a class="more" href="#">
+                    View more <i class="m-icon-swapright m-icon-white"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- END DASHBOARD STATS -->
+    <div class="row-fluid">
+        <div class="span12">
+            <!-- BEGIN SAMPLE TABLE PORTLET-->
+            <div class="portlet box red">
+                <div class="portlet-title">
+                    <div class="caption"><i class="icon-sitemap"></i>主机静态信息</div>
+                    <div class="tools">
+                        <a href="javascript:;" class="collapse"></a>
+                        <a href="#portlet-config" data-toggle="modal" class="config"></a>
+                        <a href="javascript:;" class="reload"></a>
+                        <a href="javascript:;" class="remove"></a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>IP 地址</th>
+                            <th>主机名</th>
+                            <th class="hidden-480">MAC 地址</th>
+                            <th>系统类型</th>
+                            <th>内存大小（M）</th>
+                            <th>硬盘大小（M）</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for line in table_list %}
+                            <tr>
+                                <td><a href="{% url 'monitor:details' line.host_uid %}">{{ line.host_ip }}</a></td>
+                                <td>{{ line.host_name }}</td>
+                                <td>{{ line.host_mac }}</td>
+                                <td>{{ line.os }}</td>
+                                <td>{{ line.memory_total }}</td>
+                                <td>{{ line.disk_total }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- END SAMPLE TABLE PORTLET-->
+        </div>
+    </div>
+{% endblock %}

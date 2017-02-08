@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block 'page-title' %}
+    {{ host_info.host_name }}
+    <small>显示 {{ host_info.host_name }} 主机的详细监控信息</small>
+{% endblock %}
+
+{% block 'path' %}
+    <li>
+        <i class="icon-angle-right"></i>
+        <a href="{% url 'monitor:hostlist' %}">主机列表</a>
+    </li>
+    <li>
+        <i class="icon-angle-right"></i>
+        <a href="{% url 'monitor:details' host_info.host_uid %}">{{ host_info.host_name }}</a>
+    </li>
+{% endblock %}
+
+{% block 'container' %}
+    <div class="portlet-body form">
+        <!-- BEGIN FORM-->
+        <div class="form-horizontal form-view">
+            <div class="row-fluid">
+                <div class="span6 ">
+                    <div class="control-group">
+                        <label class="control-label">IP 地址:</label>
+                        <div class="controls">
+                            <span class="text bold">{{ host_info.host_ip }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!--/span-->
+                <div class="span6 ">
+                    <div class="control-group">
+                        <label class="control-label">主机名:</label>
+                        <div class="controls">
+                            <span class="text bold">{{ host_info.host_name }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!--/span-->
+            </div>
+            <!--/row-->
+            <div class="row-fluid">
+                <div class="span6 ">
+                    <div class="control-group">
+                        <label class="control-label">MAC 地址:</label>
+                        <div class="controls">
+                            <span class="text bold">{{ host_info.host_mac }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!--/span-->
+                <div class="span6 ">
+                    <div class="control-group">
+                        <label class="control-label">系统类型:</label>
+                        <div class="controls">
+                            <span class="text bold">{{ host_info.os }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!--/span-->
+            </div>
+            <!--/row-->
+            <div class="row-fluid">
+                <div class="span6 ">
+                    <div class="control-group">
+                        <label class="control-label">内存大小（M）:</label>
+                        <div class="controls">
+                            <span class="text bold">{{ host_info.memory_total }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!--/span-->
+                <div class="span6 ">
+                    <div class="control-group">
+                        <label class="control-label">硬盘大小（M）:</label>
+                        <div class="controls">
+                            <span class="text bold">{{ host_info.disk_total }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!--/span-->
+            </div>
+        </div>
+    </div>
+    <div>
+        <!-- BEGIN INTERACTIVE CHART PORTLET-->
+        <div class="portlet box red">
+            <div class="portlet-title">
+                <div class="caption"><i class="icon-reorder"></i>主机动态信息</div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse"></a>
+                    <a href="#portlet-config" data-toggle="modal" class="config"></a>
+                    <a href="javascript:;" class="reload"></a>
+                    <a href="javascript:;" class="remove"></a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="chart_2" class="chart"></div>
+            </div>
+        </div>
+        <!-- END INTERACTIVE CHART PORTLET-->
+    </div>
+
+
+{% endblock %}
+
+{% block 'scripts' %}
+    <script src="{% static 'js/app.js' %}" type="text/javascript"></script>
+    <!-- END PAGE LEVEL SCRIPTS -->
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            App.init();
+
+            if (!jQuery.plot) {
+                return;
+            }
+
+            function chart2() {
+                function randValue() {
+                    return (Math.floor(Math.random() * (1 + 40 - 20))) + 20;
+                }
+                var cpu_per_view = {{ cpu_percent_view }};
+                var memory_per_view = {{ memory_percent_view }};
+                var swap_per_view = {{ swap_percent_view }};
+
+
+                var plot = $.plot($("#chart_2"), [{
+                            data: cpu_per_view,
+                            label: "CPU使用率（%）"
+                        }, {
+                            data: memory_per_view,
+                            label: "内存使用率（%）"
+                        }, {
+                            data: swap_per_view,
+                            label: "SWAP使用率（%）"
+                        }
+                    ], {
+                        series: {
+                            lines: {
+                                show: true,
+                                lineWidth: 2,
+                                fill: true,
+                                fillColor: {
+                                    colors: [{
+                                            opacity: 0.05
+                                        }, {
+                                            opacity: 0.01
+                                        }
+                                    ]
+                                }
+                            },
+                            points: {
+                                show: true
+                            },
+                            shadowSize: 2
+                        },
+                        grid: {
+                            hoverable: true,
+                            clickable: true,
+                            tickColor: "#eee",
+                            borderWidth: 0
+                        },
+                        colors: ["#d12610", "#37b7f3", "#52e136"],
+                        xaxis: {
+                            ticks: 11,
+                            tickDecimals: 0
+                        },
+                        yaxis: {
+                            ticks: 11,
+                            tickDecimals: 0
+                        }
+                    });
+
+
+                function showTooltip(x, y, contents) {
+                    $('<div id="tooltip">' + contents + '</div>').css({
+                            position: 'absolute',
+                            display: 'none',
+                            top: y + 5,
+                            left: x + 15,
+                            border: '1px solid #333',
+                            padding: '4px',
+                            color: '#fff',
+                            'border-radius': '3px',
+                            'background-color': '#333',
+                            opacity: 0.80
+                        }).appendTo("body").fadeIn(200);
+                }
+
+                var previousPoint = null;
+                $("#chart_2").bind("plothover", function (event, pos, item) {
+                    $("#x").text(pos.x.toFixed(2));
+                    $("#y").text(pos.y.toFixed(2));
+
+                    if (item) {
+                        if (previousPoint != item.dataIndex) {
+                            previousPoint = item.dataIndex;
+
+                            $("#tooltip").remove();
+                            var x = item.datapoint[0].toFixed(2),
+                                y = item.datapoint[1].toFixed(2);
+
+                            showTooltip(item.pageX, item.pageY, item.series.label + " of " + x + " = " + y);
+                        }
+                    } else {
+                        $("#tooltip").remove();
+                        previousPoint = null;
+                    }
+                });
+            }
+
+            chart2();
+
+        })
+    </script>
+{% endblock %}
